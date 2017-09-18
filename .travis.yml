@@ -1,6 +1,10 @@
 language: node_js
 
 node_js:
+ sm-deps
+  - 0.12
+  - iojs
+  - 4
 
 before_install:
   - chmod +x gradlew
@@ -20,4 +24,4 @@ notifications:
     - https://github.com/rameshmaveric/weblogic-deployer-ex.git
 
   
-      
+
