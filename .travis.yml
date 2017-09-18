@@ -19,7 +19,7 @@ deploy:
 notifications:
   webhooks:
      urls:
-      - https://github.com/rameshmaveric/weblogic-deployer-ex.git
+    - https://github.com/rameshmaveric/weblogic-deployer-ex.git
 
   
       
