@@ -1,7 +1,7 @@
 'use strict'
 
 require('should')
-var child_process = require('child_process')
+var cp = require('child_process')
 var semver = require('semver')
 // var sinon = require('sinon')
 var Lab = require('lab')
@@ -21,7 +21,7 @@ describe('config', function () {
         return done()
       }
 
-      child_process.exec(
+      cp.exec(
         nodeBinary + ' -r ../config -e "console.log(process.env.BASIC)" dotenv_config_path=./test/.env',
         function (err, stdout, stderr) {
           if (err) {
@@ -29,6 +29,25 @@ describe('config', function () {
           }
 
           stdout.trim().should.eql('basic')
+
+          done()
+        }
+      )
+    })
+
+    it('should not strip leading "=" signs when preloading config', function (done) {
+      if (semver.lt(process.env.npm_config_node_version, '1.6.0')) {
+        return done()
+      }
+
+      child_process.exec(
+        nodeBinary + ' -r ../config -e "console.log(process.env.LEADING_EQUAL_SIGN)" dotenv_config_path=./test/.env',
+        function (err, stdout, stderr) {
+          if (err) {
+            return done(err)
+          }
+
+          stdout.trim().should.eql('=FOO')
 
           done()
         }

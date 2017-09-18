@@ -66,29 +66,37 @@ describe('dotenv', function () {
     })
 
     it('does not write over keys already in process.env', function (done) {
-      process.env.TEST = 'test'
+      process.env.test = 'test'
       // 'val' returned as value in `beforeEach`. should keep this 'test'
       dotenv.config()
 
-      process.env.TEST.should.eql('test')
+      process.env.test.should.eql('test')
       done()
     })
 
-    it('catches any errors thrown from reading file or parsing', function (done) {
-      var errorStub = s.stub(console, 'error')
-      readFileSyncStub.throws()
+    it('does not write over keys already in process.env if the key has a falsy value', function (done) {
+      process.env.test = ''
+      // 'val' returned as value in `beforeEach`. should keep this ''
+      dotenv.config()
 
-      dotenv.config().should.eql(false)
-      errorStub.callCount.should.eql(1)
+      process.env.test.should.eql('')
       done()
     })
 
-    it('takes option for silencing errors', function (done) {
-      var errorStub = s.stub(console, 'error')
+    it('returns parsed object', function (done) {
+      var env = dotenv.config()
+
+      env.should.not.have.property('error')
+      env.parsed.should.eql({ test: 'val' })
+      done()
+    })
+
+    it('returns any errors thrown from reading file or parsing', function (done) {
       readFileSyncStub.throws()
 
-      dotenv.config({silent: true}).should.eql(false)
-      errorStub.called.should.be.false
+      var env = dotenv.config()
+      env.should.have.property('error')
+      env.error.should.be.instanceOf(Error)
       done()
     })
   })
@@ -124,39 +132,6 @@ describe('dotenv', function () {
       done()
     })
 
-    describe('expanding variables', function () {
-      before(function (done) {
-        process.env.BASIC = 'should_not_be_chosen_because_exists_in_local_env'
-        done()
-      })
-
-      it('expands environment variables like $BASIC', function (done) {
-        parsed.BASIC_EXPAND.should.eql('basic')
-        done()
-      })
-
-      it('prioritizes .env file value (if exists)', function (done) {
-        parsed.BASIC_EXPAND.should.eql('basic')
-        done()
-      })
-
-      it('defers to process.env', function (done) {
-        // from `before`
-        parsed.TEST_EXPAND.should.eql('test')
-        done()
-      })
-
-      it('defaults missing variables to an empty string', function (done) {
-        parsed.UNDEFINED_EXPAND.should.eql('')
-        done()
-      })
-
-      it('does not expand escaped variables', function (done) {
-        parsed.ESCAPED_EXPAND.should.equal('$ESCAPED')
-        done()
-      })
-    })
-
     it('defaults empty values to empty string', function (done) {
       parsed.EMPTY.should.eql('')
       done()
@@ -190,13 +165,23 @@ describe('dotenv', function () {
     })
 
     it('retains inner quotes', function (done) {
-      parsed.RETAIN_INNER_QUOTES.should.eql('{\"foo\": \"bar\"}')
-      parsed.RETAIN_INNER_QUOTES_AS_STRING.should.eql('{\"foo\": \"bar\"}')
+      parsed.RETAIN_INNER_QUOTES.should.eql('{"foo": "bar"}')
+      parsed.RETAIN_INNER_QUOTES_AS_STRING.should.eql('{"foo": "bar"}')
       done()
     })
 
     it('retains spaces in string', function (done) {
       parsed.INCLUDE_SPACE.should.eql('some spaced out string')
+      done()
+    })
+
+    it('parses email addresses completely', function (done) {
+      parsed.should.have.property('USERNAME', 'therealnerdybeast@example.tld')
+      done()
+    })
+
+    it('should not remove leading "=" in variable', function (done) {
+      parsed.LEADING_EQUAL_SIGN.should.eql('=FOO')
       done()
     })
   })
