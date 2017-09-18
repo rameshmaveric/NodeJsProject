@@ -76,6 +76,15 @@ describe('dotenv', function () {
       done()
     })
 
+    it('does not write over keys already in process.env if the key has a falsy value', function (done) {
+      process.env.test = ''
+      // 'val' returned as value in `beforeEach`. should keep this ''
+      dotenv.config()
+
+      process.env.test.should.eql('')
+      done()
+    })
+
     it('returns parsed object', function (done) {
       var env = dotenv.config()
 
@@ -188,6 +197,11 @@ describe('dotenv', function () {
 
     it('parses email addresses completely', function (done) {
       parsed.should.have.property('USERNAME', 'therealnerdybeast@example.tld')
+      done()
+    })
+
+    it('should not remove leading "=" in variable', function (done) {
+      parsed.LEADING_EQUAL_SIGN.should.eql('=FOO')
       done()
     })
   })
